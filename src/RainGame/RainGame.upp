@@ -1,0 +1,26 @@
+uses
+	CtrlLib;
+
+library
+	"SDL SDLmain";
+
+file
+	main.cpp,
+	RainGame.h,
+	RainGame.iml,
+	Game.h,
+	Game.cpp,
+	MapEditor.h,
+	MapEditor.cpp,
+	Entity.h,
+	Entity.cpp,
+	Water.h,
+	Water.cpp,
+	World.h,
+	World.cpp,
+	TileSet.h,
+	TileSet.cpp;
+
+mainconfig
+	"" = "GUI";
+
