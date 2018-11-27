@@ -5,6 +5,7 @@ enum {FIXED_TOP, FIXED_BOTTOM, FIXED_SIDES};
 
 
 struct Object {
+	String name;
 	Rectf prev_pos, pos;
 	Pointf velocity, acceleration;
 	byte fixed = 0;
@@ -12,6 +13,7 @@ struct Object {
 	int tile_id = -1;
 	bool collide_ground = false;
 	bool is_tile_mirror = false;
+	bool is_frozen = false;
 	
 	Object() {
 		pos = RectC(0,0,0,0);
@@ -47,12 +49,15 @@ struct World {
 public:
 	typedef World CLASSNAME;
 	World();
-	void AddObject(Object& o) {obj.Add(&o);}
+	~World();
+	void AddObject(Object& o) {obj.Add(&o); ASSERT(o.pos.left <= o.pos.right && o.pos.top >= o.pos.bottom);}
 	void AddOwnedObject(Object* o) {obj.Add(o); owned_obj.Add(o);}
 	void Tick();
 	void FixedCollide(Object& fixed, Object& dynamic, CollideFn fn);
 	void DynamicCollide(Object& fixed, Object& dynamic, CollideFn fn);
 	void SetCollideFunction(int i, CollideFn fn) {collide_fns[i] = fn;}
+	void RemoveObject(Object* o);
+	Object* FindObject(String name);
 	
 	int GetObjectCount() {return obj.GetCount();}
 	Object& GetObject(int i) {return *obj[i];}

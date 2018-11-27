@@ -25,6 +25,8 @@ void TileSet::Load(int world) {
 	Load("bg", "w" + IntStr(world) + "_bg.png", false);
 	
 	Load("water", "water.png", false);
+	Load("bigwater", "bigwater.png", false);
+	Load("runningwater", "runningwater.png", false);
 	
 }
 

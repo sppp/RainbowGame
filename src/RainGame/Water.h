@@ -14,7 +14,18 @@ struct WaterSpawn : public Object {
 	virtual void Tick();
 };
 
-
+struct WaterRunning : public Object {
+	Vector<Object*> moved_objects;
+	TimeStop ts;
+	int wait = 0;
+	int prev_steps = 0;
+	bool dir = false;
+	
+	static const int step = 100;
+	
+	virtual void Tick();
+	void ReleaseObjs();
+};
 
 
 #endif

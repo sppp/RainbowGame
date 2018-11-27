@@ -8,10 +8,10 @@ Map::Map() {
 	Tile& block1 = GetTileSet().tiles.Get("block1");
 	Size block1_size = block1.GetSize();
 	for(int i = 0; i < 100; i++) {
-		int j = Random(width*height);
+		int j = Random(((double)width/blocksize)*((double)height/blocksize));
 		MapTile& o = maptiles.Add();
-		o.pos.left = (j % width) * blocksize;
-		o.pos.top = (j / width) * blocksize;
+		o.pos.left = (j % (width / blocksize)) * blocksize;
+		o.pos.top = (j / (width / blocksize)) * blocksize;
 		o.pos.right = o.pos.left + block1_size.cx;
 		o.pos.bottom = o.pos.top - block1_size.cy;
 		o.tile_id = block1.id;
@@ -23,7 +23,7 @@ Map::Map() {
 	ws.pos.left = 10 * blocksize;
 	ws.pos.top = 10 * blocksize;
 	ws.pos.right = ws.pos.left + 1;
-	ws.pos.bottom = ws.pos.top + 1;
+	ws.pos.bottom = ws.pos.top - 1;
 }
 
 
@@ -43,9 +43,9 @@ void MapRenderer::Paint(Draw& d) {
 		
 		if (o.tile_id >= 0) {
 			int x0 = o.pos.left * multiplier;
-			int y0 = (map.height * map.blocksize - o.pos.top) * multiplier;
+			int y0 = (map.height - o.pos.top) * multiplier;
 			int x1 = o.pos.right * multiplier;
-			int y1 = (map.height * map.blocksize - o.pos.bottom) * multiplier;
+			int y1 = (map.height - o.pos.bottom) * multiplier;
 			Tile& tile = GetTileSet().tiles[o.tile_id];
 			
 			Image i = tile.img;
@@ -90,12 +90,12 @@ void MapRenderer::MouseMove(Point p, dword keyflags) {
 
 void MapRenderer::DoDraw(Point p) {
 	int xi = p.x / (map->blocksize * multiplier);
-	int yi = map->height - p.y / (map->blocksize * multiplier);
+	int yi = map->height / Map::blocksize - p.y / (map->blocksize * multiplier);
 	
 	Tile& block1 = GetTileSet().tiles.Get("block1");
 	Size block1_size = block1.GetSize();
 	
-	if (xi >= 0 && xi < map->width && yi >= 0 && yi < map->height) {
+	if (xi >= 0 && xi < map->width / map->blocksize && yi >= 0 && yi < map->height / map->blocksize){
 		MapTile& o = map->maptiles.Add();
 		o.tile_id = block1.id;
 		o.pos.left = xi * map->blocksize;

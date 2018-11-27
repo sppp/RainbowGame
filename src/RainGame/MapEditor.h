@@ -1,7 +1,7 @@
 #ifndef _RainGame_MapEditor_h_
 #define _RainGame_MapEditor_h_
 
-enum {COLLIDE_GROUND};
+enum {COLLIDE_GROUND, COLLIDE_WATER, COLLIDE_BORDER, COLLIDE_RUNNINGWATER, COLLIDE_COUNT};
 
 struct MapTile : public Object {
 	
@@ -12,8 +12,8 @@ struct MapTile : public Object {
 struct Map {
 	Array<MapTile> maptiles;
 	Array<WaterSpawn> waterspawns;
-	int width = 40;
-	int height = 30;
+	int width = 40 * blocksize;
+	int height = 30 * blocksize;
 	Point player_start;
 	
 	static const int blocksize = 16;

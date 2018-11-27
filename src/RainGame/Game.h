@@ -5,6 +5,7 @@
 class Game : public TopWindow {
 	Map map;
 	Player pl;
+	Object top, bottom;
 	
 	double multiplier = 1.5;
 	
