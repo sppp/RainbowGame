@@ -1,13 +1,20 @@
-#include "RainGame.h"
+#include "Engine.h"
+
 
 World::World() {
 	collide_fns.SetCount(32, NULL);
 }
 
 World::~World() {
+	Clear();
+}
+
+void World::Clear() {
+	obj.Clear();
 	for(int i = 0; i < owned_obj.GetCount(); i++)
 		delete owned_obj[i];
 	owned_obj.Clear();
+	ts.Reset();
 }
 
 void World::RemoveObject(Object* o) {
@@ -159,28 +166,36 @@ void World::DynamicCollide(Object& fixed, Object& dynamic, CollideFn fn) {
 	bool bot_col = dynamic.pos.bottom < fixed.pos.bottom && dynamic.pos.top > fixed.pos.bottom;
 	bool vinside = dynamic.pos.top <= fixed.pos.top && dynamic.pos.bottom >= fixed.pos.bottom;
 	bool voutside = dynamic.pos.top >= fixed.pos.top && dynamic.pos.bottom <= fixed.pos.bottom;
+	
 	bool left_col = dynamic.pos.left < fixed.pos.left && dynamic.pos.right > fixed.pos.left;
 	bool right_col = dynamic.pos.right > fixed.pos.right && dynamic.pos.left < fixed.pos.right;
 	bool hinside = dynamic.pos.left >= fixed.pos.left && dynamic.pos.right <= fixed.pos.right;
 	bool houtside = dynamic.pos.left <= fixed.pos.left && dynamic.pos.right >= fixed.pos.right;
 	
-	if (up_col || bot_col || vinside || voutside) {
-		if (left_col) {
+	bool prevtop_col = dynamic.prev_pos.bottom >= fixed.pos.top && dynamic.pos.bottom < fixed.pos.top;
+	bool prevbot_col = dynamic.prev_pos.top <= fixed.pos.bottom && dynamic.pos.top > fixed.pos.bottom;
+	bool prevleft_col = dynamic.prev_pos.right <= fixed.pos.left && dynamic.pos.right > fixed.pos.left;
+	bool prevright_col = dynamic.prev_pos.left >= fixed.pos.right && dynamic.pos.left < fixed.pos.right;
+	
+	
+	if (up_col || bot_col || vinside || voutside || prevtop_col || prevbot_col) {
+		if (left_col || prevleft_col) {
 			if (fn) fn(fixed, dynamic, C_LEFT);
 		}
-		if (right_col) {
+		if (right_col || prevright_col) {
 			if (fn) fn(fixed, dynamic, C_RIGHT);
 		}
 	}
 	
-	if (left_col || right_col || hinside || houtside) {
-		if (up_col) {
+	if (left_col || right_col || hinside || houtside || prevleft_col || prevright_col) {
+		if (up_col || prevtop_col) {
 			if (fn) fn(fixed, dynamic, C_TOP);
 		}
 		
-		if (bot_col) {
+		if (bot_col || prevbot_col) {
 			if (fn) fn(fixed, dynamic, C_BOTTOM);
 		}
 	}
 	
 }
+

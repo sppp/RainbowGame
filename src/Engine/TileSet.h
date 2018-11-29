@@ -1,5 +1,5 @@
-#ifndef _RainGame_TileSet_h_
-#define _RainGame_TileSet_h_
+#ifndef _Engine_TileSet_h_
+#define _Engine_TileSet_h_
 
 struct Tile {
 	Image img;
@@ -15,12 +15,14 @@ struct TileSet {
 	
 	TileSet();
 	
-	void Load(int world);
-	void Load(String key, String file, bool is_solid);
+	void Load();
+	void Load(String key);
+	void LoadGreen(String from_key);
 	
 	void Serialize(Stream& s) {s % tiles;}
 };
 
 inline TileSet& GetTileSet() {return Single<TileSet>();}
+
 
 #endif

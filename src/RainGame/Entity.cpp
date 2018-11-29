@@ -2,7 +2,12 @@
 
 
 Player::Player() {
-	state = "idle";
+	acceleration.y = GRAVITY;
+	collide_mask |= 1 << COLLIDE_GROUND;
+	collide_mask |= 1 << COLLIDE_WATER;
+	collide_mask |= 1 << COLLIDE_BORDER;
+	collide_mask |= 1 << COLLIDE_RUNNINGWATER;
+	collide_mask |= 1 << COLLIDE_THROWABLE;
 }
 
 bool Player::Key(dword key) {
@@ -25,7 +30,7 @@ bool Player::Key(dword key) {
 	}
 	if (key == K_UP) {
 		if (collide_ground)
-			velocity.y = 160;
+			velocity.y = 200;
 		return true;
 	}
 	if (key == (K_SPACE|K_KEYUP)) {
@@ -75,37 +80,29 @@ void Player::PostTick() {
 	if (!collide_ground) {
 		if (!is_umbrella) {
 			tile_id = GetTileSet().tiles.Find("player_falling");
-			state = "falling";
 		} else {
 			tile_id = GetTileSet().tiles.Find("player_fallingumbrella");
-			state = "fallingumbrella";
 		}
 	}
 	else if (velocity.x != 0) {
 		if (!is_umbrella) {
 			tile_id = GetTileSet().tiles.Find("player_running");
-			state = "running";
 		} else {
 			if (have_water) {
 				tile_id = GetTileSet().tiles.Find("player_runningumbrellaup");
-				state = "runningumbrellaup";
 			} else {
 				tile_id = GetTileSet().tiles.Find("player_runningumbrella");
-				state = "runningumbrella";
 			}
 		}
 	}
 	else {
 		if (!is_umbrella) {
 			tile_id = GetTileSet().tiles.Find("player_idle");
-			state = "idle";
 		} else {
 			if (have_water) {
 				tile_id = GetTileSet().tiles.Find("player_umbrellaup");
-				state = "umbrellaup";
 			} else {
 				tile_id = GetTileSet().tiles.Find("player_umbrella");
-				state = "umbrella";
 			}
 		}
 	}
@@ -144,31 +141,56 @@ bool Player::AddWaterDrop(int type) {
 void Player::ReleaseDrops() {
 	
 	if (have_water >= max_drops) {
-		
-		for(int i = 0; i < 16; i++) {
-			WaterRunning* wr = new WaterRunning();
-			
-			wr->wait = i;
-			wr->dir = is_tile_mirror;
-			
-			Point pt = pos.TopCenter();
-			wr->pos.top = pt.y;
-			if (is_tile_mirror)
-				wr->pos.left = pt.x - pos.GetWidth();
-			else
-				wr->pos.left = pt.x + pos.GetWidth();
-			wr->pos.left -= (int)wr->pos.left % Map::blocksize;
-			wr->pos.top -= (int)wr->pos.top % Map::blocksize;
-			wr->pos.right = wr->pos.left + Map::blocksize;
-			wr->pos.bottom = wr->pos.top - Map::blocksize;
-			wr->tile_id = GetTileSet().tiles.Find("runningwater");
-			Tile& tile = GetTileSet().tiles[wr->tile_id];
-			wr->collide_mask |= 1 << COLLIDE_BORDER;
-			wr->collide_mask |= 1 << COLLIDE_RUNNINGWATER;
-			
-			GetWorld().AddOwnedObject(wr);
+		if (water_type == WATER_NORMAL) {
+			for(int i = 0; i < 16; i++) {
+				WaterRunning* wr = new WaterRunning();
+				
+				wr->wait = i;
+				wr->dir = is_tile_mirror;
+				
+				Point pt = pos.TopCenter();
+				wr->pos.top = pt.y;
+				if (is_tile_mirror)
+					wr->pos.left = pt.x - pos.GetWidth();
+				else
+					wr->pos.left = pt.x + pos.GetWidth();
+				wr->pos.left -= (int)wr->pos.left % Map::blocksize;
+				wr->pos.top -= (int)wr->pos.top % Map::blocksize;
+				wr->pos.right = wr->pos.left + Map::blocksize;
+				wr->pos.bottom = wr->pos.top - Map::blocksize;
+				wr->tile_id = GetTileSet().tiles.Find("runningwater");
+				Tile& tile = GetTileSet().tiles[wr->tile_id];
+				wr->collide_mask |= 1 << COLLIDE_BORDER;
+				wr->collide_mask |= 1 << COLLIDE_RUNNINGWATER;
+				
+				GetWorld().AddOwnedObject(wr);
+			}
 		}
+	}
+	else if (have_water > 0) {
+		WaterDrop* wd = new WaterDrop();
+		wd->collide_mask |= 1 << COLLIDE_THROWABLE;
+		wd->is_thrown = true;
+		wd->weight = have_water;
+		Point pt = pos.TopCenter();
 		
+		if (is_tile_mirror) {
+			pt.x -= pos.GetWidth();
+			wd->velocity.x = -700;
+		}
+		else {
+			pt.x += pos.GetWidth();
+			wd->velocity.x = +700;
+		}
+		wd->tile_id = GetTileSet().tiles.Find("water");
+		Tile& tile = GetTileSet().tiles[wd->tile_id];
+		wd->pos.left = pt.x - tile.img.GetWidth() / 2;
+		wd->pos.top = pt.y - tile.img.GetHeight() / 2;
+		wd->pos.right = wd->pos.left + tile.img.GetWidth();
+		wd->pos.bottom = wd->pos.top - tile.img.GetHeight();
+		
+		
+		GetWorld().AddOwnedObject(wd);
 	}
 	
 	is_umbrella = false;
@@ -177,4 +199,108 @@ void Player::ReleaseDrops() {
 		GetWorld().RemoveObject(&waterdrops[i]);
 	}
 	waterdrops.Clear();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Enemy::Enemy() {
+	Init();
+}
+
+void Enemy::Init() {
+	acceleration.y = GRAVITY;
+	collide_mask |= 1 << COLLIDE_GROUND;
+	collide_mask |= 1 << COLLIDE_BORDER;
+	collide_mask |= 1 << COLLIDE_RUNNINGWATER;
+	collide_mask |= 1 << COLLIDE_THROWABLE;
+	
+	dir = Random(3) - 1;
+}
+
+void Enemy::Tick() {
+	
+}
+
+void Enemy::PostTick() {
+	
+	if (weight > 0 ) {
+		// Jump
+		if (ts.Elapsed() > 1000 && collide_ground) {
+			act = Random(ACT_COUNT);
+			
+			switch (act) {
+				case ACT_LEFT:
+					velocity.x = -60;
+					is_tile_mirror = true;
+					break;
+				case ACT_RIGHT:
+					velocity.x = +60;
+					is_tile_mirror = false;
+					break;
+				case ACT_IDLE:
+					is_tile_mirror = !is_tile_mirror;
+					velocity.x = 0;
+					break;
+				case ACT_JUMP:
+					velocity.y = 200;
+					velocity.x = 0;
+					break;
+				case ACT_JUMPLEFT:
+					velocity.y = 200;
+					velocity.x = -60;
+					is_tile_mirror = true;
+					break;
+				case ACT_JUMPRIGHT:
+					velocity.y = 200;
+					velocity.x = +60;
+					is_tile_mirror = false;
+					break;
+				
+			}
+			
+			
+			ts.Reset();
+		}
+	} else {
+		if (ts.Elapsed() > 600) {
+			rotate += 90;
+			while (rotate >= 360) rotate -= 360;
+			
+			ts.Reset();
+		}
+	}
+}
+
+void Enemy::TakeHit(int damage, int dir) {
+	if (damage <= 0) return;
+	
+	bool was_ok = weight > 0;
+	
+	weight -= damage;
+	
+	if (was_ok && weight <= 0) {
+		tile_id++; // change overlay color
+		velocity.x = 0;
+	}
+	
+	if (weight < 0) {
+		if (dir == C_LEFT)
+			velocity.x = +200;
+		else if (dir == C_RIGHT)
+			velocity.x = -200;
+	}
 }

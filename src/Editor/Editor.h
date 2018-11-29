@@ -1,30 +1,20 @@
-#ifndef _RainGame_MapEditor_h_
-#define _RainGame_MapEditor_h_
+#ifndef _Editor_Editor_h_
+#define _Editor_Editor_h_
 
-enum {COLLIDE_GROUND, COLLIDE_WATER, COLLIDE_BORDER, COLLIDE_RUNNINGWATER, COLLIDE_COUNT};
+#include <Engine/Engine.h>
 
-struct MapTile : public Object {
-	
-	
-	void Serialize(Stream& s) {Object::Serialize(s);}
-};
+#define IMAGECLASS EditorImg
+#define IMAGEFILE <Editor/Editor.iml>
+#include <Draw/iml_header.h>
 
-struct Map {
-	Array<MapTile> maptiles;
-	Array<WaterSpawn> waterspawns;
-	int width = 40 * blocksize;
-	int height = 30 * blocksize;
-	Point player_start;
-	
-	static const int blocksize = 16;
-	
-	
-	Map();
-	void Serialize(Stream& s) {s % maptiles % waterspawns % width % height % player_start;}
-};
+
+enum {TOOL_PEN, TOOL_ERASE};
+
+class MapEditor;
 
 struct MapRenderer : public Ctrl {
 	Map* map;
+	MapEditor* editor;
 	bool is_drawing = false;
 	
 	static const int multiplier = 1;
@@ -37,6 +27,10 @@ struct MapRenderer : public Ctrl {
 };
 
 class MapEditor : public TopWindow {
+	
+protected:
+	friend class MapRenderer;
+	
 	Map map;
 	String open_path;
 	
@@ -45,6 +39,12 @@ class MapEditor : public TopWindow {
 	ArrayCtrl tilelist;
 	
 	MenuBar menu;
+	ToolBar tool;
+	
+	int tool_id = 0;
+	Array<Object> tile_objects;
+	
+	void AddTileObject(String name, String tile_name, int fixed_id=-1);
 	
 public:
 	typedef MapEditor CLASSNAME;
@@ -53,11 +53,15 @@ public:
 	void Data();
 	
 	void MainMenu(Bar& bar);
+	void ToolMenu(Bar& bar);
 	void Open();
+	void OpenMap(int world, int map);
 	void Save();
 	void SaveAs();
 	void PlayMap();
 	void Start();
+	void SetTool(int i) {tool_id = i;}
 };
+
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef _RainGame_Water_h_
 #define _RainGame_Water_h_
 
+enum {WATER_NORMAL, WATER_FIRE, WATER_LIGHTNING};
+
 class WaterDrop : public Object {
 	bool dir = false;
 	

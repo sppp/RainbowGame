@@ -1,5 +1,7 @@
 uses
-	CtrlLib;
+	CtrlLib,
+	Engine,
+	Editor;
 
 library
 	"SDL SDLmain";
@@ -10,16 +12,10 @@ file
 	RainGame.iml,
 	Game.h,
 	Game.cpp,
-	MapEditor.h,
-	MapEditor.cpp,
 	Entity.h,
 	Entity.cpp,
 	Water.h,
-	Water.cpp,
-	World.h,
-	World.cpp,
-	TileSet.h,
-	TileSet.cpp;
+	Water.cpp;
 
 mainconfig
 	"" = "GUI";

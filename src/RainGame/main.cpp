@@ -1,7 +1,9 @@
 #include "RainGame.h"
 
+#define IMAGECLASS RainGameImg
 #define IMAGEFILE <RainGame/RainGame.iml>
 #include <Draw/iml_source.h>
+
 
 
 
@@ -24,7 +26,6 @@ GUI_APP_MAIN
 		Game g;
 		if (!map_path.IsEmpty())
 			g.LoadMap(map_path);
-		g.InitMap();
 		g.Run();
 	}
 }

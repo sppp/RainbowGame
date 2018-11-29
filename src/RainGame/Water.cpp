@@ -103,6 +103,12 @@ void WaterRunning::Tick() {
 		o.pos.bottom = o.pos.top - h;
 		ASSERT(o.pos.top >= o.pos.bottom);
 	}
+	
+	Object& bottom = *GetWorld().FindObject("bottom");
+	if (pos.top < bottom.pos.top) {
+		GetWorld().RemoveObject(this);
+		ReleaseObjs();
+	}
 }
 
 void WaterRunning::ReleaseObjs() {

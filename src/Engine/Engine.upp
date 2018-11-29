@@ -1,0 +1,19 @@
+description "\377B128,0,0";
+
+uses
+	CtrlLib;
+
+file
+	Engine.h,
+	Common.h,
+	View.h,
+	View.cpp,
+	Entity.h,
+	World.h,
+	World.cpp,
+	Object.h,
+	Map.h,
+	Map.cpp,
+	TileSet.h,
+	TileSet.cpp;
+
